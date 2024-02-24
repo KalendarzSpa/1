@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prosty Kalendarz Rezerwacji</title>
+    <style>
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .day {
+            border: 1px solid #ccc;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .day-bold {
+            font-weight: bold; /* Dodajemy pogrubienie tylko dla daty */
+        }
+
+        .time-slot {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .reserved {
+            background-color: #ffcccc;
+        }
+
+        .taken {
+            background-color: #ff9999; /* Kolor dla zajętych bloków */
+        }
+
+        /* Dodajemy styl dla modala */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            z-index: 1000;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Kalendarz Rezerwacji</h2>
+
+    <div class="calendar" id="calendar">
+        <!-- Tutaj generujemy bloki czasowe -->
+    </div>
+
+    <!-- Dodajemy modal do struktury HTML -->
+    <div class="modal" id="takenModal">
+        Podana godzina jest już zajęta.
+    </div>
+
+    <div id="overlay"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Pobieramy element o id "calendar"
+            var calendar = document.getElementById('calendar');
+
+            // Pobieramy dzisiejszą datę
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Tworzymy bloki czasowe na trzy dni (dzisiaj, jutro, pojutrze)
+            for (var dayOffset = 0; dayOffset < 3; dayOffset++) {
+                var currentDate = new Date(today);
+                currentDate.setDate(currentDate.getDate() + dayOffset);
+
+                var dayColumn = document.createElement('div');
+                dayColumn.className = 'day';
+                dayColumn.textContent = currentDate.toLocaleDateString();
+
+                // Dodajemy pogrubienie tylko dla daty w kolumnach (poza pierwszą kolumną)
+                if (dayOffset > 0) {
+                    dayColumn.classList.add('day-bold');
+                }
+
+                // Tworzymy bloki czasowe od 8:00 do 21:00
+                for (var i = 8; i <= 21; i++) {
+                    var timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    timeSlot.textContent = i + ':00 - ' + (i + 1) + ':00';
+
+                    // Dodajemy obsługę kliknięcia na blok czasowy
+                    timeSlot.addEventListener('click', function () {
+                        // Sprawdzamy, czy blok nie jest już zarezerwowany
+                        if (!this.classList.contains('reserved') && !this.classList.contains('taken')) {
+                            // Pobieramy numer pokoju od użytkownika
+                            var roomNumber = prompt('Podaj numer pokoju:');
+
+                            // Jeżeli użytkownik podał numer pokoju
+                            if (roomNumber !== null && roomNumber !== '') {
+                                // Zaznaczamy blok jako zarezerwowany i ustawiamy kolor na jasno czerwony
+                                this.classList.add('reserved');
+                                this.style.backgroundColor = '#ff6666';
+                                // Możesz również dodać logikę przechowywania informacji o rezerwacji, np. w tablicy
+                                // lub wysłać te informacje na serwer w celu zapisu w bazie danych.
+                            }
+                        } else {
+                            // Jeżeli blok jest już zarezerwowany, dodajemy klasę "taken"
+                            this.classList.add('taken');
+                            // Wywołujemy funkcję wyświetlającą modal z komunikatem
+                            openTakenModal();
+                        }
+                    });
+
+                    // Dodajemy blok czasowy do kolumny
+                    dayColumn.appendChild(timeSlot);
+                }
+
+                // Dodajemy kolumnę do kalendarza
+                calendar.appendChild(dayColumn);
+            }
+        });
+
+        function openTakenModal() {
+            var modal = document.getElementById('takenModal');
+            var overlay = document.getElementById('overlay');
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+
+            // Ukrywamy modal po 2 sekundach
+            setTimeout(function() {
+                modal.style.display = 'none';
+                overlay.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+
+</body>
+</html>
+
